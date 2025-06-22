@@ -1,44 +1,36 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-const { OpenAI } = require('openai');
 require('dotenv').config();
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 👉 Serve static frontend files
+// Serve frontend
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 👉 OpenAI setup
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Gemini API setup
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
-// 👉 Chat endpoint
+// POST endpoint for chat
 app.post('/api/chat', async (req, res) => {
   const userMessage = req.body.message;
-  console.log('🟡 User Message:', userMessage); // 👈 Log user input
-
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: userMessage }],
-    });
-
-    console.log('🟢 OpenAI Response:', response); // 👈 Log full OpenAI response
-
-    const reply = response.choices[0].message.content;
-    res.json({ reply });
+    const result = await model.generateContent(userMessage);
+    const response = await result.response;
+    const text = response.text();
+    res.json({ reply: text });
   } catch (err) {
-    console.error('🔴 OpenAI Error:', err.response?.data || err.message); // 👈 Log detailed error
-    res.status(500).json({ error: 'Something went wrong with OpenAI' });
+    console.error('Gemini API Error:', err);
+    res.status(500).json({ error: 'Gemini API failed' });
   }
 });
 
-// 👉 Start the server
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
