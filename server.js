@@ -19,6 +19,7 @@ const openai = new OpenAI({
 // 👉 Chat endpoint
 app.post('/api/chat', async (req, res) => {
   const userMessage = req.body.message;
+  console.log('🟡 User Message:', userMessage); // 👈 Log user input
 
   try {
     const response = await openai.chat.completions.create({
@@ -26,10 +27,12 @@ app.post('/api/chat', async (req, res) => {
       messages: [{ role: 'user', content: userMessage }],
     });
 
+    console.log('🟢 OpenAI Response:', response); // 👈 Log full OpenAI response
+
     const reply = response.choices[0].message.content;
     res.json({ reply });
   } catch (err) {
-    console.error('OpenAI Error:', err);
+    console.error('🔴 OpenAI Error:', err.response?.data || err.message); // 👈 Log detailed error
     res.status(500).json({ error: 'Something went wrong with OpenAI' });
   }
 });
