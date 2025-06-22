@@ -14,7 +14,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post('/api/chat', async (req, res) => {
   const userMessage = req.body.message;
-  console.log("User:", userMessage);
+  console.log("🔵 User:", userMessage);
 
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
@@ -22,9 +22,10 @@ app.post('/api/chat', async (req, res) => {
     const response = await result.response;
     const reply = response.text();
 
+    console.log("🟢 Gemini:", reply);
     res.json({ reply });
-  } catch (error) {
-    console.error("Gemini Error:", error);
+  } catch (err) {
+    console.error("🔴 Gemini Error:", err);
     res.status(500).json({ reply: "Error or no response." });
   }
 });
