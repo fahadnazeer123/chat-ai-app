@@ -98,35 +98,43 @@
   <footer>Created by Fahad Nazeer</footer>
 
   <script>
-    const form = document.getElementById('chat-form');
-    const userInput = document.getElementById('user-input');
-    const chatContainer = document.getElementById('chat');
+  const chatContainer = document.getElementById('chat');
+  const input = document.getElementById('input');
+  const sendButton = document.getElementById('send');
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const message = userInput.value.trim();
-      if (!message) return;
+  function addMessage(text, className) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${className}`;
+    messageDiv.textContent = text;
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
 
-      appendMessage('user', message);
-      userInput.value = '';
+  sendButton.addEventListener('click', () => {
+    const message = input.value.trim();
+    if (!message) return;
 
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
+    addMessage(message, 'user');
+    input.value = '';
+
+    fetch('/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: message })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.text) {
+          addMessage(data.text, 'bot');
+        } else {
+          addMessage('❌ Error or no response.', 'bot');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        addMessage('❌ Error or no response.', 'bot');
       });
-
-      const data = await res.json();
-      appendMessage('bot', data.reply || "Error or no response.");
-    });
-
-    function appendMessage(role, text) {
-      const msg = document.createElement('div');
-      msg.className = `message ${role}`;
-      msg.innerText = text;
-      chatContainer.appendChild(msg);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-  </script>
+  });
+</script>
 </body>
 </html>
