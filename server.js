@@ -1,40 +1,48 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+// Init
 dotenv.config();
-
 const app = express();
+const PORT = process.env.PORT || 3000;
+
+// For __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-console.log('🔐 Loading Gemini API key...');
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Gemini setup
+const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-console.log('🤖 Initializing Gemini model...');
-const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-
-app.get("/", (req, res) => {
-  res.send("🤖 Chat AI App is Running...");
+// Route: GET /
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.post('/api/chat', async (req, res) => {
-  const userMessage = req.body.message;
-  console.log('📩 User message received:', userMessage);
-
+// Route: POST /ask
+app.post('/ask', async (req, res) => {
   try {
-    const result = await model.generateContent(userMessage);
-    const response = result.response.text();
-    console.log('✅ Gemini reply:', response);
-    res.json({ reply: response });
-  } catch (error) {
-    console.error('❌ Gemini API error:', error.message);
-    res.status(500).json({ reply: 'Error: ' + error.message });
+    const prompt = req.body.prompt;
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    res.json({ text });
+  } catch (err) {
+    console.error('Error from Gemini API:', err.message);
+    res.status(500).json({ error: 'Failed to get response from Gemini API' });
   }
 });
 
-const PORT = process.env.PORT || 10000;
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`✅ Server is running on port ${PORT}`);
 });
