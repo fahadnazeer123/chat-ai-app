@@ -15,6 +15,10 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 console.log('🤖 Initializing Gemini model...');
 const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
+app.get("/", (req, res) => {
+  res.send("🤖 Chat AI App is Running...");
+});
+
 app.post('/api/chat', async (req, res) => {
   const userMessage = req.body.message;
   console.log('📩 User message received:', userMessage);
