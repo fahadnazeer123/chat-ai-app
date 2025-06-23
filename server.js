@@ -34,7 +34,7 @@ app.post('/ask', async (req, res) => {
     const prompt = req.body.prompt;
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
+    const text = await response.text();
     res.json({ text });
   } catch (err) {
     console.error('Error from Gemini API:', err.message);
