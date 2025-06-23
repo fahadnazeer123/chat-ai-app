@@ -99,8 +99,8 @@
 
   <script>
   const chatContainer = document.getElementById('chat');
-  const input = document.getElementById('input');
-  const sendButton = document.getElementById('send');
+  const form = document.getElementById('chat-form');
+  const input = document.getElementById('user-input');
 
   function addMessage(text, className) {
     const messageDiv = document.createElement('div');
@@ -110,7 +110,9 @@
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
-  sendButton.addEventListener('click', () => {
+  form.addEventListener('submit', (e) => {
+    e.preventDefault(); // 🛑 Stop page from refreshing!
+
     const message = input.value.trim();
     if (!message) return;
 
