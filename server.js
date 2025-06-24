@@ -31,11 +31,17 @@ app.get('/', (req, res) => {
 // Route: POST /ask
 app.post('/ask', async (req, res) => {
   try {
-    const prompt = req.body.prompt;
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = await response.text();
-    res.json({ text });
+    const chat = model.startChat({
+  history: [],
+  generationConfig: {
+    maxOutputTokens: 1000,
+  },
+});
+
+const result = await chat.sendMessage(prompt);
+const response = await result.response;
+const text = response.text();
+res.json({ text });
   } catch (err) {
     console.error('Error from Gemini API:', err.message);
     res.status(500).json({ error: 'Failed to get response from Gemini API' });
