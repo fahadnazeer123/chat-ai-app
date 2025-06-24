@@ -5,12 +5,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Init
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// __dirname for ES Modules
+// For ES Module __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -19,17 +18,15 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Gemini setup
+// ✅ Gemini API Setup
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-// 🧠 Create chat instance (you can later make it session-based)
+// ✅ Start chat session (this uses v1beta internally)
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 const chat = model.startChat({
   history: [],
   generationConfig: {
-    temperature: 0.7,
-    topK: 1,
-    topP: 1,
+    temperature: 0.8,
     maxOutputTokens: 2048,
   },
 });
@@ -42,22 +39,18 @@ app.get('/', (req, res) => {
 app.post('/ask', async (req, res) => {
   try {
     const prompt = req.body.prompt;
-    if (!prompt) {
-      return res.status(400).json({ error: 'Prompt is required' });
-    }
+    if (!prompt) return res.status(400).json({ error: "Prompt is required" });
 
-    const result = await chat.sendMessage(prompt); // 🧠 send as chat message
+    const result = await chat.sendMessage(prompt);
     const response = await result.response;
     const text = await response.text();
-
     res.json({ text });
   } catch (err) {
-    console.error('❌ Error from Gemini API:', err.message || err);
-    res.status(500).json({ error: 'Failed to get response from Gemini API' });
+    console.error("❌ Gemini API error:", err.message || err);
+    res.status(500).json({ error: "Something went wrong with Gemini API." });
   }
 });
 
-// Start server
 app.listen(PORT, () => {
-  console.log(`✅ Chat server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
