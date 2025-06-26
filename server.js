@@ -20,7 +20,7 @@ app.use(express.static(path.join(__dirname, "public")));
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 
 // 🧠 Create persistent chat session
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const model = genAI.getGenerativeModel({ model: "models/gemini-pro" });
 const chat = model.startChat({
   history: [],
   generationConfig: {
