@@ -42,7 +42,7 @@ app.post("/ask", async (req, res) => {
 
     // 💬 Send user message to Gemini chat
     const result = await chat.sendMessage(prompt);
-    const response = result.response;
+    const response = await result.response;
     const text = await response.text();
 
     res.json({ text });
